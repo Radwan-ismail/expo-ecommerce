@@ -1,6 +1,9 @@
 import { requireAuth } from "@clerk/express";
 import { User } from "../models/user.model.js";
 import { ENV } from "../config/env.js";
+import { createClerkClient } from "@clerk/clerk-sdk-node";
+
+const clerkClient = createClerkClient({ secretKey: ENV.CLERK_SECRET_KEY });
 
 export const protectRoute = [
   requireAuth(),
@@ -9,8 +12,19 @@ export const protectRoute = [
       const clerkId = req.auth().userId;
       if (!clerkId) return res.status(401).json({ message: "Unauthorized - invalid token" });
 
-      const user = await User.findOne({ clerkId });
-      if (!user) return res.status(404).json({ message: "User not found" });
+      let user = await User.findOne({ clerkId });
+      if (!user) {
+        // Fetch user from Clerk
+        const clerkUser = await clerkClient.users.getUser(clerkId);
+        user = await User.create({
+          clerkId,
+          email: clerkUser.emailAddresses[0]?.emailAddress,
+          name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || "User",
+          imageUrl: clerkUser.imageUrl,
+          addresses: [],
+          wishlist: [],
+        });
+      }
 
       req.user = user;
 

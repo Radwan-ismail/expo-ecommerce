@@ -13,6 +13,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@clerk/clerk-sdk-node": "^5.1.6",
     "@clerk/express": "^1.7.52",
     "cloudinary": "^2.8.0",
     "cors": "^2.8.5",

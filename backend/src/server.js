@@ -37,7 +37,7 @@ app.use(
 
 app.use(express.json());
 app.use(clerkMiddleware()); // adds auth object under the req => req.auth
-app.use(cors({ origin: ENV.CLIENT_URL, credentials: true })); // credentials: true allows the browser to send the cookies to the server with the request
+app.use(cors({ origin: true, credentials: true })); // credentials: true allows the browser to send the cookies to the server with the request
 
 app.use("/api/inngest", serve({ client: inngest, functions }));
 
@@ -67,5 +67,15 @@ const startServer = async () => {
     console.log("Server is up and running");
   });
 };
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
 
 startServer();

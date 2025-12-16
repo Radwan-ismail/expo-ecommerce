@@ -2,8 +2,14 @@ import { useAuth } from "@clerk/clerk-expo";
 import axios from "axios";
 import { useEffect } from "react";
 
-// localhost will work in simulator
-const API_URL = "http://localhost:3000/api";
+// localhost will work in iOS simulator
+// const API_URL = "http://localhost:3000/api";
+
+// For Android emulator, use 10.0.2.2
+// const API_URL = "http://10.0.2.2:3000/api";
+
+// For physical device or different network
+const API_URL = "http://192.168.100.3:3000/api";
 
 // prod url will work in your physical device
 // const API_URL = "https://expo-ecommerce-th4ln.sevalla.app/api"

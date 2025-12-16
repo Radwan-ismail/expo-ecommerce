@@ -5,10 +5,20 @@ import { Product } from "../models/product.model.js";
 import { Order } from "../models/order.model.js";
 import { Cart } from "../models/cart.model.js";
 
-const stripe = new Stripe(ENV.STRIPE_SECRET_KEY);
+let stripe;
+try {
+  stripe = new Stripe(ENV.STRIPE_SECRET_KEY);
+} catch (error) {
+  console.error("Invalid Stripe secret key:", error.message);
+  stripe = null;
+}
 
 export async function createPaymentIntent(req, res) {
   try {
+    console.log("Creating payment intent");
+    if (!stripe) {
+      return res.status(500).json({ error: "Stripe not configured" });
+    }
     const { cartItems, shippingAddress } = req.body;
     const user = req.user;
 
@@ -87,7 +97,7 @@ export async function createPaymentIntent(req, res) {
       // in the webhooks section we will use this metadata
     });
 
-    res.status(200).json({ clientSecret: paymentIntent.client_secret });
+    res.status(200).json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
   } catch (error) {
     console.error("Error creating payment intent:", error);
     res.status(500).json({ error: "Failed to create payment intent" });
@@ -95,6 +105,9 @@ export async function createPaymentIntent(req, res) {
 }
 
 export async function handleWebhook(req, res) {
+  if (!stripe) {
+    return res.status(500).send("Stripe not configured");
+  }
   const sig = req.headers["stripe-signature"];
   let event;
 
